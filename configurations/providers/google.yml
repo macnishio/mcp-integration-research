@@ -1,0 +1,189 @@
+# Google Workspace Provider Configuration
+# Research template for automated integration
+# Based on: Dynamic Cloud Provider Integration research
+
+provider:
+  name: "Google Workspace"
+  type: "google"
+  version: "1.0.0"
+  
+oauth:
+  version: "2.0"
+  auth_url: "https://accounts.google.com/o/oauth2/v2/auth"
+  token_url: "https://oauth2.googleapis.com/token"  
+  requires_pkce: true
+  scopes:
+    - "https://www.googleapis.com/auth/gmail.modify"
+    - "https://www.googleapis.com/auth/drive"
+    - "https://www.googleapis.com/auth/spreadsheets"
+    - "https://www.googleapis.com/auth/calendar"
+
+services:
+  gmail:
+    base_url: "https://gmail.googleapis.com/gmail/v1"
+    rate_limit: 250  # requests per user per second
+    tools:
+      - name: "sendEmail"
+        endpoint: "/users/me/messages/send"
+        method: "POST"
+        description: "Send email via Gmail API"
+        parameters:
+          to:
+            type: "string"
+            description: "Recipient email address"
+          subject:
+            type: "string"
+            description: "Email subject"
+          body:
+            type: "string"
+            description: "Email body content"
+        required: ["to", "subject", "body"]
+      
+      - name: "listEmails"
+        endpoint: "/users/me/messages"
+        method: "GET"
+        description: "List emails from inbox"
+        parameters:
+          q:
+            type: "string"
+            description: "Query string for filtering"
+          maxResults:
+            type: "integer"
+            description: "Maximum number of results"
+        
+  drive:
+    base_url: "https://www.googleapis.com/drive/v3"
+    rate_limit: 1000  # requests per user per 100 seconds
+    tools:
+      - name: "uploadFile"
+        endpoint: "/files"
+        method: "POST"
+        description: "Upload file to Google Drive"
+        parameters:
+          name:
+            type: "string"
+            description: "File name"
+          mimeType:
+            type: "string"
+            description: "MIME type of the file"
+          content:
+            type: "string"
+            description: "File content (base64 encoded)"
+          parentId:
+            type: "string"
+            description: "Parent folder ID"
+        required: ["name", "content"]
+      
+      - name: "listFiles"
+        endpoint: "/files"
+        method: "GET"
+        description: "List files in Google Drive"
+        parameters:
+          q:
+            type: "string"
+            description: "Query string for filtering"
+          pageSize:
+            type: "integer"
+            description: "Number of files to return"
+
+  sheets:
+    base_url: "https://sheets.googleapis.com/v4"
+    rate_limit: 100  # requests per user per 100 seconds
+    tools:
+      - name: "createSpreadsheet"
+        endpoint: "/spreadsheets"
+        method: "POST"
+        description: "Create a new spreadsheet"
+        parameters:
+          title:
+            type: "string"
+            description: "Spreadsheet title"
+          sheets:
+            type: "array"
+            description: "Array of sheet configurations"
+        required: ["title"]
+      
+      - name: "updateValues"
+        endpoint: "/spreadsheets/{spreadsheetId}/values/{range}"
+        method: "PUT"
+        description: "Update spreadsheet values"
+        parameters:
+          spreadsheetId:
+            type: "string"
+            description: "Spreadsheet ID"
+          range:
+            type: "string"
+            description: "A1 notation range"
+          values:
+            type: "array"
+            description: "2D array of values"
+        required: ["spreadsheetId", "range", "values"]
+
+  calendar:
+    base_url: "https://www.googleapis.com/calendar/v3"
+    rate_limit: 500  # requests per user per 100 seconds
+    tools:
+      - name: "createEvent"
+        endpoint: "/calendars/{calendarId}/events"
+        method: "POST"
+        description: "Create a calendar event"
+        parameters:
+          calendarId:
+            type: "string"
+            description: "Calendar ID (use 'primary' for default)"
+          summary:
+            type: "string"
+            description: "Event title"
+          start:
+            type: "object"
+            description: "Start time configuration"
+          end:
+            type: "object"
+            description: "End time configuration"
+        required: ["calendarId", "summary", "start", "end"]
+
+error_patterns:
+  authentication:
+    - pattern: "invalid_grant"
+      action: "refresh_token"
+      description: "Token has expired or been revoked"
+    - pattern: "unauthorized_client"
+      action: "reauthorize"
+      description: "Client not authorized for this operation"
+    - pattern: "invalid_client"
+      action: "check_credentials"
+      description: "Client credentials are invalid"
+      
+  rate_limit:
+    - pattern: "quotaExceeded"
+      action: "exponential_backoff"
+      description: "API quota exceeded"
+    - pattern: "rateLimitExceeded"
+      action: "wait_and_retry"
+      description: "Rate limit exceeded"
+    - pattern: "userRateLimitExceeded"
+      action: "throttle_user"
+      description: "Per-user rate limit exceeded"
+      
+  api_errors:
+    - pattern: "notFound"
+      action: "check_resource"
+      description: "Resource not found"
+    - pattern: "invalidArgument"
+      action: "validate_parameters"
+      description: "Invalid parameter provided"
+    - pattern: "permissionDenied"
+      action: "check_permissions"
+      description: "Insufficient permissions"
+
+metadata:
+  documentation_url: "https://developers.google.com/workspace"
+  api_version: "v1"
+  last_updated: "2025-08-22"
+  research_notes: |
+    Google Workspace APIs require careful handling of:
+    1. PKCE for OAuth flows
+    2. Complex quota and rate limiting rules
+    3. Service-specific scopes
+    4. Batch request optimization
+    5. Webhook/push notification setup for real-time updates

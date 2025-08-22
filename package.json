@@ -1,0 +1,46 @@
+{
+  "name": "mcp-integration-research",
+  "version": "1.0.0",
+  "description": "Research repository for Dynamic Cloud Provider Integration in Multi-Cloud Platform Architectures",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/",
+    "demo:template-generation": "node examples/research-demos/template-generation-demo.mjs",
+    "demo:config-driven": "node examples/research-demos/config-driven-demo.mjs",
+    "demo:ai-assisted": "node examples/research-demos/ai-assisted-demo.mjs",
+    "benchmark:all": "node benchmarks/run-all-benchmarks.mjs",
+    "benchmark:efficiency": "node benchmarks/automation-efficiency/template-vs-manual.mjs",
+    "generate:provider": "node implementations/generators/template-generator.mjs",
+    "validate:config": "node implementations/generators/config-validator.mjs"
+  },
+  "keywords": [
+    "multi-cloud",
+    "api-integration",
+    "cloud-provider",
+    "automation",
+    "oauth",
+    "research",
+    "mcp"
+  ],
+  "author": "Digital Autograph Research Team",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "js-yaml": "^4.1.0",
+    "uuid": "^9.0.1",
+    "jsonschema": "^1.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macnishio/mcp-integration-research.git"
+  },
+  "bugs": {
+    "url": "https://github.com/macnishio/mcp-integration-research/issues"
+  },
+  "homepage": "https://github.com/macnishio/mcp-integration-research#readme"
+}
